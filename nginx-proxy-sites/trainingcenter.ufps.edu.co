@@ -1,0 +1,5 @@
+server {
+  listen 80;
+  server_name trainingcenter.ufps.edu.co;
+  root /var/www/html/;
+}
