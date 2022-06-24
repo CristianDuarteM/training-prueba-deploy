@@ -12,6 +12,7 @@ const auth = require('../middlewares/auth')
  */
 
 categories.get('/', auth.isAuth, categoriesCtrl.index )
+
 categories.get('/:id/problems', auth.isAuth, problemsCtrl.list )
 categories.get('/:id/materials', auth.isAuth, materialsCtrl.list )
 categories.post('/', auth.isAuth, categoriesCtrl.create )

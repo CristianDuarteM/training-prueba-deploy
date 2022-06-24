@@ -18,8 +18,8 @@ function getRanking(req, res) {
     if (!req.query.page)
         return res.status(400).send({ error: 'Datos incompletos' })
 
-    let limit = (req.query.limit) ? parseInt(req.query.limit) : 10
-    let offset = (req.query.page) ? limit * (parseInt(req.query.page) - 1) : 0
+    let limit = (req.query.limit) ? parseInt(req.query.limit) : 10;
+    let offset = (req.query.page) ? limit * (parseInt(req.query.page) - 1) : 0;
 
     let condition = {}
     let meta = {}
@@ -35,7 +35,7 @@ function getRanking(req, res) {
             return res.status(200).send({ meta })
 
         sequelize.query(
-            'SELECT u.username, u.name, i.name as institution, i.short_name as short, i.institution as type_i, COUNT(s.problem_id) as total, ' +
+            'SELECT u.id, u.username, u.name, u.institution_id, i.name as institution, i.short_name as short, i.institution as type_i, COUNT(s.problem_id) as total, ' +
             '(SELECT COUNT( DISTINCT(problem_id) ) ' +
             'FROM submissions ' +
             'WHERE verdict="Accepted" ' +
@@ -81,7 +81,7 @@ function getRanking2(req, res) {
             return res.status(200).send({ meta })
 
         sequelize.query(
-            'SELECT u.username, u.name, i.name as institution, i.short_name as short, i.institution as type_i, COUNT(s.problem_id) as total, ' +
+            'SELECT u.id, u.username, u.name, u.institution_id, i.name as institution, i.short_name as short, i.institution as type_i, COUNT(s.problem_id) as total, ' +
             '(SELECT COUNT( DISTINCT(problem_id) ) ' +
             'FROM submissions ' +
             'WHERE verdict="Accepted" ' +
@@ -127,7 +127,7 @@ function getRanking3(req, res) {
             return res.status(200).send({ meta })
 
         sequelize.query(
-            'SELECT u.username, u.name, i.name as institution, i.short_name as short, i.institution as type_i, COUNT(s.problem_id) as total, ' +
+            'SELECT u.id, u.username, u.name, u.institution_id, i.name as institution, i.short_name as short, i.institution as type_i, COUNT(s.problem_id) as total, ' +
             '(SELECT COUNT( DISTINCT(problem_id) ) ' +
             'FROM submissions ' +
             'WHERE verdict="Accepted" AND created_at LIKE :institution ' +
@@ -141,6 +141,52 @@ function getRanking3(req, res) {
             'GROUP BY u.id ' +
             'ORDER BY accepted DESC, total ASC ' +
             'LIMIT ' + offset + ', ' + limit, { replacements: { institution: `${año}%` },  type: Sequelize.QueryTypes.SELECT }
+        ).then(ranking => {
+            res.status(200).send({ meta: meta, data: ranking })
+        }).catch(error => {
+            return res.status(500).send(error)
+        })
+    }).catch(error => {
+        return res.status(500).send(error)
+    })
+}
+
+function getRankingCategory(req, res) {
+    if (!req.query.page)
+        return res.status(400).send({ error: 'Datos incompletos' })
+
+    let limit = (req.query.limit) ? parseInt(req.query.limit) : 10
+    let offset = (req.query.page) ? limit * (parseInt(req.query.page) - 1) : 0
+    let category = (req.query.category) ? parseInt(req.query.category) : 0
+
+    let condition = {}
+    let meta = {}
+
+    sequelize.query(
+        'SELECT count(users.id) AS count ' +
+        'FROM users', { type: Sequelize.QueryTypes.SELECT }
+    ).then(response => {
+        meta.totalPages = Math.ceil(response[0].count / limit)
+        meta.totalItems = response[0].count
+
+        if (offset >= response[0].count)
+            return res.status(200).send({ meta })
+
+        sequelize.query(
+            'SELECT u.id, u.username, u.name, u.institution_id, i.name as institution, i.short_name as short, i.institution as type_i, COUNT(s.problem_id) as total, ' +
+            '(SELECT COUNT( DISTINCT(problem_id) ) ' +
+            'FROM submissions ' +
+            'WHERE verdict="Accepted" AND problem_id IN (SELECT p.id FROM categories c INNER JOIN problems p ON p.category_id = c.id and c.id =:institution) ' + 
+            'AND user_id = u.id) as accepted ' +
+            'FROM users as u ' +
+            'LEFT JOIN submissions as s ' +
+            'ON u.id = s.user_id ' +
+            'INNER JOIN institutions as i ' +
+            'ON i.id=u.institution_id ' +
+            'AND problem_id IN (SELECT p.id FROM categories c INNER JOIN problems p ON p.category_id = c.id and c.id =:institution) ' +
+            'GROUP BY u.id ' +
+            'ORDER BY accepted DESC, total ASC ' +
+            'LIMIT ' + offset + ', ' + limit, { replacements: { institution: `${category}` },  type: Sequelize.QueryTypes.SELECT }
         ).then(ranking => {
             res.status(200).send({ meta: meta, data: ranking })
         }).catch(error => {
@@ -418,6 +464,7 @@ module.exports = {
     getRanking,
     getRanking2,
     getRanking3,
+    getRankingCategory,
     getSyllabusRanking,
     getAssignmentResult,
     getAssignmentProbVerdicts,

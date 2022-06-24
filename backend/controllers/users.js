@@ -8,7 +8,7 @@ const Problems = require('../models').problems
 const authService = require('../services/authenticationService')
 const path = require('path')
 const _ = require('lodash');
-const {categories: Category} = require("../models");
+const {categories: Category, sequelize} = require("../models");
 
 /**
  * Users controller
@@ -143,7 +143,12 @@ function getUser(req, res) {
         where: {
             id: req.params.id
         },
-        attributes: ['id', 'name', 'email', 'code', 'username', 'created_at']
+        attributes: ['id', 'name', 'email', 'code', 'username', 'created_at'],
+        include: [
+            { model: Institutions ,as:"institution",
+                attributes: ["id", "name"]
+            }
+        ]
     }).then(function(user) {
         return res.status(200).send(user)
     }).catch(function(err) {
@@ -186,15 +191,18 @@ function update(req, res) {
     if (req.params.id != req.user.sub)
         return res.status(401).send({ error: 'No se encuentra autorizado' })
 
-    if (!req.body.name || !req.body.email || !req.body.username)
+    if (!req.body.name || !req.body.email || !req.body.username || !req.body.institution)
         return res.status(400).send({ error: 'Datos incompletos' })
 
     let condition = {
         id: req.params.id
     }
 
+    let {institution,  ...cuerpo} = req.body;
+    cuerpo.institution_id = institution.id;
+
     User.update(
-        req.body, {
+        cuerpo, {
             where: condition
         }
     ).then((affectedRows) => {
@@ -266,8 +274,8 @@ function getSyllabus(req, res) {
 }
 
 function getSubmissions(req, res) {
-    if (req.params.id != req.user.sub)
-        return res.status(401).send({ error: 'No se encuentra autorizado' })
+   /* if (req.params.id != req.user.sub)
+        return res.status(401).send({ error: 'No se encuentra autorizado' })*/
 
     if (!req.query.page)
         return res.status(400).send({ error: 'Datos incompletos' })
