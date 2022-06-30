@@ -63,10 +63,6 @@ module.exports = (sequelize, DataTypes) => {
     Contests.associate = function(models) {
         Contests.belongsTo(models.users)
 
-        Contests.belongsTo(models.institutions,{
-            as: 'institution'
-        })
-
         Contests.belongsToMany(models.problems, {
             through: 'contests_problems',
             as: 'problems',

@@ -274,8 +274,8 @@ function getSyllabus(req, res) {
 }
 
 function getSubmissions(req, res) {
-   /* if (req.params.id != req.user.sub)
-        return res.status(401).send({ error: 'No se encuentra autorizado' })*/
+   if (req.params.id != req.user.sub)
+        return res.status(401).send({ error: 'No se encuentra autorizado' })
 
     if (!req.query.page)
         return res.status(400).send({ error: 'Datos incompletos' })

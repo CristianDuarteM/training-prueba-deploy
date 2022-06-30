@@ -35,7 +35,7 @@ function getRanking(req, res) {
             return res.status(200).send({ meta })
 
         sequelize.query(
-            'SELECT u.id, u.username, u.name, u.institution_id, i.name as institution, i.short_name as short, i.institution as type_i, COUNT(s.problem_id) as total, ' +
+            'SELECT u.id, u.username, u.name, u.institution_id, i.name as institution, i.short_name as short, i.type as type_i, COUNT(s.problem_id) as total, ' +
             '(SELECT COUNT( DISTINCT(problem_id) ) ' +
             'FROM submissions ' +
             'WHERE verdict="Accepted" ' +
@@ -81,7 +81,7 @@ function getRanking2(req, res) {
             return res.status(200).send({ meta })
 
         sequelize.query(
-            'SELECT u.id, u.username, u.name, u.institution_id, i.name as institution, i.short_name as short, i.institution as type_i, COUNT(s.problem_id) as total, ' +
+            'SELECT u.id, u.username, u.name, u.institution_id, i.name as institution, i.short_name as short, i.type as type_i, COUNT(s.problem_id) as total, ' +
             '(SELECT COUNT( DISTINCT(problem_id) ) ' +
             'FROM submissions ' +
             'WHERE verdict="Accepted" ' +

@@ -10,7 +10,12 @@ const ContestStudent = require('../models').contests_students
 const _ = require('lodash')
 const moment = require('moment')
 
+const env = process.env.NODE_ENV || "development"
+const config = require('../config/config.js')[env]
+
 const Sequelize = require('sequelize')
+const sequelize = new Sequelize(config.url, config)
+
 const {categories: Category} = require("../models");
 const Op = Sequelize.Op
 
@@ -55,7 +60,6 @@ function index(req, res) {
             },
             include: [
                 { model: User, attributes: ['name', 'id', 'username','email'] },
-                { model: Institution, as: 'institution'}
             ]
         })
         .then((contest) => {
@@ -346,7 +350,6 @@ function list(req, res) {
         include:
             [
                 { model: User, attributes: ['name', 'id', 'username','email'] },
-                { model: Institution, as :'institution', attributes:['id','name', 'country','telephone','address','shortName'] }
             ],
         attributes: ['id', 'title', 'description', 'init_date', 'end_date', 'rules', 'public', 'key'],
         limit: limit,
@@ -411,7 +414,6 @@ function hasPermission(user_id, contest_id, cb) {
     })
 }
 
-
 function getContestsByInstitution(req, res){
     let limit = (req.query.limit) ? parseInt(req.query.limit) : 10
     let offset = (req.query.page) ? limit * (parseInt(req.query.page) - 1) : 0
@@ -422,24 +424,23 @@ function getContestsByInstitution(req, res){
 
     condition.institution_id = idInstitution
 
-    Contest.findAndCountAll({
-            attributes: ['id', 'title', 'description', 'init_date', 'end_date', 'rules', 'public', 'key'],
-        include: [
-            { model: Institution ,as:"institution",
-                required: false,
-            }
-        ],
-        where: condition,
-        limit: limit,
-        offset: offset
-    }).then((response) => {
-        meta.totalPages = Math.ceil(response.count / limit)
-        meta.totalItems = response.count
+    sequelize.query(
+        'select distinct contests.id, contests.title, contests.public, contests.init_date from contests as contests' +
+        " inner join contests_problems as cprob on cprob.contest_id = contests.id " +
+        "inner join submissions as submissions on cprob.id = submissions.contest_problem_id " +
+        "inner join users as users on submissions.user_id = users.id && users.institution_id =" +idInstitution+
+        " group by contests.id, submissions.id, users.id order by contests.id " +
+        " LIMIT "+ offset+ ", "+limit, {   type: Sequelize.QueryTypes.SELECT }
+    )
+    .then((response) => {
+        console.log(response.count)
+        meta.totalItems = response.length
+        meta.totalPages = Math.ceil(response.length / limit)
 
-        if (offset >= response.count) {
+        if (offset >= response[0].count) {
             return res.status(200).send({ meta })
         }
-        res.status(200).send({ meta: meta, data: response.rows })
+        res.status(200).send({ meta: meta, data: response})
     }).catch((err) => {
         return res.status(500).send({ error: `${err}` })
     })

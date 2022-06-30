@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true,
             type: DataTypes.STRING
         },
-        institution: {
+        private: {
             allowNull: false,
             type: DataTypes.INTEGER
         },
@@ -52,9 +52,7 @@ module.exports = (sequelize, DataTypes) => {
         Institutions.hasMany(models.users, {
             as: 'users'
         })
-        Institutions.hasMany(models.contests, {
-            as: 'contests'
-        })
+
     }
 
     return Institutions;

@@ -17,7 +17,7 @@ const {where} = require("sequelize");
 function getUniversities(req, res){
     institutions.findAll({
         where:{
-            institution:0
+            type:0
         }
     })
         .then((universities) => {
@@ -32,7 +32,7 @@ function getUniversities(req, res){
 function getColleges(req, res){
     institutions.findAll({
         where:{
-            institution:1
+            type:1
         }
     })
         .then((universities) => {
