@@ -1,19 +1,18 @@
-version: '3'
+version: '3.2'
 services:
   frontend:
     build: "frontend"
     image: "frontend"
-    container_name: "training-center-frontend"
+    container_name: "training-center-frontend2"
     ports:
-      - "${FRONTEND_PORT}:80"
+      - "${FRONTEND_PORT}:8080"
     depends_on:
       - backend
-
   backend:
     build: "backend"
     image: "backend"
     restart: "always"
-    container_name: "training-center-backend"
+    container_name: "training-center-backend2"
     environment:
       - "NODE_ENV=${NODE_ENV}"
       - "DATABASE_URL=${DATABASE_URL}"
@@ -25,49 +24,54 @@ services:
       - "SMTP_SERVICE=${SMTP_SERVICE}"
       - "SMTP_PORT=${SMTP_PORT}"
     volumes:
-      - "${FILES}:/usr/src/app/files"
-      - "/var/run/docker.sock:/var/run/docker.sock"
+       - "${FILES}:/usr/src/app/files"
+       - "/var/run/docker.sock:/var/run/docker.sock"
+#      - type: bind
+#       - source: "${FILES}"
+#        target: "/usr/src/app/files"
+#      - type: bind
+#       - source: "/var/run/docker.sock"
+#        target: "/var/run/docker.sock"
     ports:
-      - "${BACKEND_PORT}:8080"
+      - "${BACKEND_PORT}:8081"
     depends_on:
-      - db
       - cpp
       - java
       - python
+#    network_mode: "host"
     
-  db:
-    image: "mariadb:10.2"
-    restart: "always"
-    environment:
-      - "MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}"
-      - "MYSQL_DATABASE=development"
-    container_name: "mariaDB"
-    ports:
-      - "${DATABASE_PORT}:3306"
-
   cpp:
     build: "grading/cpp"
     image: "cpp_image"
-    container_name: "cppSandbox"
+    container_name: "cppSandbox2"
     volumes:
-      - "${FILES}:/files"
+       - "${FILES}:/files"
+#      - type: bind
+#       - source: "${FILES}"
+#        target: "/files"
     tty: true
 
   java:
     build: "grading/java"
     image: "java_image"
     restart: "always"
-    container_name: "javaSandbox"
+    container_name: "javaSandbox2"
     volumes:
-      - "${FILES}:/files"
+       - "${FILES}:/files"
+#      - type: bind
+#       - source: "${FILES}"
+#        target: "/files"
     tty: true
 
   python:
     build: "grading/python"
     image: "python_image"
     restart: "always"
-    container_name: "pythonSandbox"
+    container_name: "pythonSandbox2"
     volumes:
-      - "${FILES}:/files"
+       - "${FILES}:/files"
+#      - type: bind
+#       - source: "${FILES}"
+#        target: "/files"
     tty: true
 

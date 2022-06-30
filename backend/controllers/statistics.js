@@ -127,7 +127,7 @@ function getRanking3(req, res) {
             return res.status(200).send({ meta })
 
         sequelize.query(
-            'SELECT u.id, u.username, u.name, u.institution_id, i.name as institution, i.short_name as short, i.institution as type_i, COUNT(s.problem_id) as total, ' +
+            'SELECT u.id, u.username, u.name, u.institution_id, i.name as institution, i.short_name as short, i.type as type_i, COUNT(s.problem_id) as total, ' +
             '(SELECT COUNT( DISTINCT(problem_id) ) ' +
             'FROM submissions ' +
             'WHERE verdict="Accepted" AND created_at LIKE :institution ' +
@@ -173,7 +173,7 @@ function getRankingCategory(req, res) {
             return res.status(200).send({ meta })
 
         sequelize.query(
-            'SELECT u.id, u.username, u.name, u.institution_id, i.name as institution, i.short_name as short, i.institution as type_i, COUNT(s.problem_id) as total, ' +
+            'SELECT u.id, u.username, u.name, u.institution_id, i.name as institution, i.short_name as short, i.type as type_i, COUNT(s.problem_id) as total, ' +
             '(SELECT COUNT( DISTINCT(problem_id) ) ' +
             'FROM submissions ' +
             'WHERE verdict="Accepted" AND problem_id IN (SELECT p.id FROM categories c INNER JOIN problems p ON p.category_id = c.id and c.id =:institution) ' + 

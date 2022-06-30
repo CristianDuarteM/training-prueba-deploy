@@ -118,12 +118,6 @@ module.exports = function(sequelize, DataTypes) {
 
         Users.hasMany(models.materials, { as: 'materials' })
 
-        Users.hasMany(models.posts, { as: 'posts' })
-
-        Users.hasMany(models.reports_forums, { as: 'reports_forums' })
-
-        Users.hasMany(models.forums, { as: 'forums' })
-
         Users.hasMany(models.submissions, { as: 'submissions' })
 
         Users.belongsTo(models.institutions, {
